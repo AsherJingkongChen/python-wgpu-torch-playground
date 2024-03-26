@@ -1,0 +1,35 @@
+[project]
+authors = [{name = "Asher Jingkong Chen"}]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: GPU",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy >= 1.26.4",
+  "torch >= 2.2.1",
+]
+description = "A playground for Python, wgpu, and PyTorch"
+keywords = ["python", "wgpu", "torch", "graphics", "machine learning", "demo"]
+license = {file = "LICENSE"}
+name = "python-wgpu-torch-playground"
+readme = "README.md"
+requires-python = ">=3.10"
+version = "0.0.0"
+
+[project.urls]
+Homepage = "https://github.com/AsherJingkongChen/python-wgpu-torch-playground/blob/main/README.md"
+Repository = "https://github.com/AsherJingkongChen/python-wgpu-torch-playground.git"
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=69.2.0"]
+
+[tool.setuptools.package-dir]
+"python_wgpu_torch_playground" = "python/python_wgpu_torch_playground"
