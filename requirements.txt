@@ -10,4 +10,5 @@ twine >= 5.0.0
 
 # Runtime dependencies
 numpy >= 1.26.4
-torch >= 2.2.1
+torch >= 2.2.2
+wgpu >= 0.15.0
