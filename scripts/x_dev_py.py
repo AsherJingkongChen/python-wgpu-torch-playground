@@ -25,11 +25,12 @@ from os import PathLike
 def dev(env_dir: PathLike[str] | str | None = None) -> None:
     from subprocess import check_call
     from u_env import Env
+    from x_build_py import build
 
     env = Env(env_dir)
     python = env.data.executable
 
-    check_call(f"{python} -m maturin develop --skip-install".split())
+    build(env_dir)
     check_call(f"{python}".split())
 
 
