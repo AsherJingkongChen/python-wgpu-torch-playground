@@ -29,11 +29,13 @@ def build(env_dir: PathLike[str] | str | None = None) -> None:
     python = env.data.executable
 
     remove_paths(get_build_paths())
-    check_call(
-        f"{python} -m build --no-isolation --outdir=dist --wheel".split()
-    )
+    check_call(f"{python} -m build --no-isolation --outdir=dist --wheel".split())
     remove_paths(get_build_temp_paths())
     check_call(f"{python} -m twine check --strict".split() + get_build_paths())
+    check_call(
+        f"{python} -m pip install --force-reinstall --no-deps".split()
+        + get_build_paths()
+    )
 
 
 def get_build_paths() -> list[Path]:

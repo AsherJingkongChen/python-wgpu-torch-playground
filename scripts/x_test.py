@@ -29,10 +29,6 @@ def test(env_dir: PathLike[str] | str | None = None) -> None:
     python = env.data.executable
 
     check_call(
-        f"{python} -m pip install --force-reinstall --no-deps".split()
-        + get_build_paths()
-    )
-    check_call(
         f"{python} -m pytest --capture=no --ignore=*-packages --import-mode=append".split()
         + get_test_paths()
     )
