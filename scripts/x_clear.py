@@ -18,37 +18,45 @@ python3 scripts/x_clear.py
 
 
 from os import PathLike
-from pathlib import Path
-from typing import Iterable
 
 
 def clear(env_dir: PathLike[str] | str | None = None) -> None:
     from u_env import Env
 
-    cwd = Path.cwd()
-    env_dir = Env.resolve_dir(env_dir).relative_to(cwd)
-    remove_paths(
-        cwd.glob("{}".format(env_dir)),
-        cwd.glob("**/__pycache__"),
-        cwd.glob("*.egg-info"),
-        cwd.glob(".pytest_cache/"),
-        cwd.glob("dist/"),
-        cwd.glob("target/"),
-        cwd.glob("python/**/*.so"),
+    remove_globs(
+        Env.resolve_dir(env_dir),
+        "dist/",
+        "python/**/*.so",
+        "target/",
+        ".pytest_cache/",
+        "*.egg-info",
+        "**/__pycache__",
     )
 
 
-def remove_paths(*paths: Iterable[Path]) -> None:
-    from itertools import chain
+def remove_globs(*patterns: PathLike[str] | str) -> None:
+    """
+    Remove all directories or files that match the glob patterns
+
+    ## Note
+    - It uses `pathlib.Path.glob` to expand the glob patterns
+    """
+    from glob import iglob
+    from os import unlink
+    from os.path import exists, isdir
     from shutil import rmtree
 
-    for path in chain(*paths):
-        if not path.exists():
-            continue
-        if path.is_dir():
-            rmtree(path)
-        else:
-            path.unlink()
+    def expand(pattern: PathLike[str] | str):
+        return iglob(str(pattern), recursive=True)
+
+    for glob in map(expand, patterns):
+        for path in glob:
+            if isdir(path):
+                rmtree(path)
+            elif not exists(path):
+                continue
+            else:
+                unlink(path)
 
 
 if __name__ == "__main__":
