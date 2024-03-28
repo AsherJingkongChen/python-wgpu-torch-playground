@@ -15,8 +15,8 @@ def hello_compute():
 
     # Define the number of elements, global and local sizes.
     # Change these and see how it affects performance.
-    n = 512 * 512
-    local_size = [32, 1, 1]
+    n = 65535 * 2
+    local_size = [2, 1, 1]
     global_size = [n // local_size[0], 1, 1]
 
     # Define two arrays
@@ -38,8 +38,12 @@ def hello_compute():
     )
 
     # Create buffer objects, input buffer is mapped.
-    buffer1 = device.create_buffer_with_data(data=data1, usage=wgpu.BufferUsage.STORAGE)
-    buffer2 = device.create_buffer_with_data(data=data2, usage=wgpu.BufferUsage.STORAGE)
+    buffer1 = device.create_buffer_with_data(
+        data=data1, usage=wgpu.BufferUsage.STORAGE
+    )
+    buffer2 = device.create_buffer_with_data(
+        data=data2, usage=wgpu.BufferUsage.STORAGE
+    )
     buffer3 = device.create_buffer(
         size=data1.nbytes,
         usage=wgpu.BufferUsage.STORAGE | wgpu.BufferUsage.COPY_SRC,
@@ -77,22 +81,36 @@ def hello_compute():
         entries=[
             {
                 "binding": 0,
-                "resource": {"buffer": buffer1, "offset": 0, "size": buffer1.size},
+                "resource": {
+                    "buffer": buffer1,
+                    "offset": 0,
+                    "size": buffer1.size,
+                },
             },
             {
                 "binding": 1,
-                "resource": {"buffer": buffer2, "offset": 0, "size": buffer2.size},
+                "resource": {
+                    "buffer": buffer2,
+                    "offset": 0,
+                    "size": buffer2.size,
+                },
             },
             {
                 "binding": 2,
-                "resource": {"buffer": buffer3, "offset": 0, "size": buffer3.size},
+                "resource": {
+                    "buffer": buffer3,
+                    "offset": 0,
+                    "size": buffer3.size,
+                },
             },
         ],
     )
 
     # Create and run the pipeline
     compute_pipeline = device.create_compute_pipeline(
-        layout=device.create_pipeline_layout(bind_group_layouts=[bind_group_layout]),
+        layout=device.create_pipeline_layout(
+            bind_group_layouts=[bind_group_layout]
+        ),
         compute={
             "module": device.create_shader_module(
                 code=(
@@ -113,7 +131,7 @@ def hello_compute():
     command_encoder = device.create_command_encoder()
 
     # Pass our QuerySet and the indices into it, where the timestamps will be written.
-    compute_pass = command_encoder.begin_compute_pass(
+    pass_encoder = command_encoder.begin_compute_pass(
         timestamp_writes={
             "query_set": query_set,
             "beginning_of_pass_write_index": 0,
@@ -131,12 +149,10 @@ def hello_compute():
         | wgpu.BufferUsage.COPY_SRC
         | wgpu.BufferUsage.COPY_DST,
     )
-    compute_pass.set_pipeline(compute_pipeline)
-    compute_pass.set_bind_group(
-        0, bind_group, [], 0, 999999
-    )  # last 2 elements not used
-    compute_pass.dispatch_workgroups(*global_size)  # x y z
-    compute_pass.end()
+    pass_encoder.set_pipeline(compute_pipeline)
+    pass_encoder.set_bind_group(0, bind_group, [], None, None)
+    pass_encoder.dispatch_workgroups(*global_size)  # x y z
+    pass_encoder.end()
 
     # Resolve our queries, and store the results in the destination buffer we created above.
     command_encoder.resolve_query_set(
@@ -146,13 +162,16 @@ def hello_compute():
         destination=query_buf,
         destination_offset=0,
     )
+
     device.queue.submit([command_encoder.finish()])
 
     # Read the query buffer to get the timestamps.
     # Index 0: beginning timestamp
     # Index 1: end timestamp
     timestamps = device.queue.read_buffer(query_buf).cast("Q").tolist()
-    print(f"Adding two {n} sized arrays took {(timestamps[1]-timestamps[0])/1000} us")
+    print(
+        f"Adding two {n} sized arrays took {(timestamps[1]-timestamps[0]) / 1000} us"
+    )
 
     # Read result
     out = device.queue.read_buffer(buffer3).cast("i")
