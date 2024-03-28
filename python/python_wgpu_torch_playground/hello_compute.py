@@ -19,14 +19,6 @@ def hello_compute():
     local_size = [32, 1, 1]
     global_size = [n // local_size[0], 1, 1]
 
-    shader_source = (
-        Path(__file__)
-        .with_name("shader.wgsl")
-        .open()
-        .read()
-        .format(",".join(map(str, local_size)))
-    )
-
     # Define two arrays
     data1 = memoryview(bytearray(n * 4)).cast("i")
     data2 = memoryview(bytearray(n * 4)).cast("i")
@@ -54,56 +46,63 @@ def hello_compute():
     )
 
     # Setup layout and bindings
-    binding_layouts = [
-        {
-            "binding": 0,
-            "visibility": wgpu.ShaderStage.COMPUTE,
-            "buffer": {
-                "type": wgpu.BufferBindingType.read_only_storage,
+    bind_group_layout = device.create_bind_group_layout(
+        entries=[
+            {
+                "binding": 0,
+                "visibility": wgpu.ShaderStage.COMPUTE,
+                "buffer": {
+                    "type": wgpu.BufferBindingType.read_only_storage,
+                },
             },
-        },
-        {
-            "binding": 1,
-            "visibility": wgpu.ShaderStage.COMPUTE,
-            "buffer": {
-                "type": wgpu.BufferBindingType.read_only_storage,
+            {
+                "binding": 1,
+                "visibility": wgpu.ShaderStage.COMPUTE,
+                "buffer": {
+                    "type": wgpu.BufferBindingType.read_only_storage,
+                },
             },
-        },
-        {
-            "binding": 2,
-            "visibility": wgpu.ShaderStage.COMPUTE,
-            "buffer": {
-                "type": wgpu.BufferBindingType.storage,
+            {
+                "binding": 2,
+                "visibility": wgpu.ShaderStage.COMPUTE,
+                "buffer": {
+                    "type": wgpu.BufferBindingType.storage,
+                },
             },
-        },
-    ]
-    bindings = [
-        {
-            "binding": 0,
-            "resource": {"buffer": buffer1, "offset": 0, "size": buffer1.size},
-        },
-        {
-            "binding": 1,
-            "resource": {"buffer": buffer2, "offset": 0, "size": buffer2.size},
-        },
-        {
-            "binding": 2,
-            "resource": {"buffer": buffer3, "offset": 0, "size": buffer3.size},
-        },
-    ]
-
-    # Put everything together
-    bind_group_layout = device.create_bind_group_layout(entries=binding_layouts)
-    pipeline_layout = device.create_pipeline_layout(
-        bind_group_layouts=[bind_group_layout]
+        ]
     )
-    bind_group = device.create_bind_group(layout=bind_group_layout, entries=bindings)
+
+    bind_group = device.create_bind_group(
+        layout=bind_group_layout,
+        entries=[
+            {
+                "binding": 0,
+                "resource": {"buffer": buffer1, "offset": 0, "size": buffer1.size},
+            },
+            {
+                "binding": 1,
+                "resource": {"buffer": buffer2, "offset": 0, "size": buffer2.size},
+            },
+            {
+                "binding": 2,
+                "resource": {"buffer": buffer3, "offset": 0, "size": buffer3.size},
+            },
+        ],
+    )
 
     # Create and run the pipeline
     compute_pipeline = device.create_compute_pipeline(
-        layout=pipeline_layout,
+        layout=device.create_pipeline_layout(bind_group_layouts=[bind_group_layout]),
         compute={
-            "module": device.create_shader_module(code=shader_source),
+            "module": device.create_shader_module(
+                code=(
+                    Path(__file__)
+                    .with_name("shader.wgsl")
+                    .open()
+                    .read()
+                    .format(",".join(map(str, local_size)))
+                )
+            ),
             "entry_point": "main",
         },
     )
