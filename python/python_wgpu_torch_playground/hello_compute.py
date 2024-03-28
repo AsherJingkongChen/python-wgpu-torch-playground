@@ -13,10 +13,8 @@ def hello_compute():
     import wgpu
     from pathlib import Path
 
-    """
-    Define the number of elements, global and local sizes.
-    Change these and see how it affects performance.
-    """
+    # Define the number of elements, global and local sizes.
+    # Change these and see how it affects performance.
     n = 512 * 512
     local_size = [32, 1, 1]
     global_size = [n // local_size[0], 1, 1]
@@ -46,13 +44,13 @@ def hello_compute():
     device = adapter.request_device(
         required_features=[wgpu.FeatureName.timestamp_query]
     )
-    cshader = device.create_shader_module(code=shader_source)
 
     # Create buffer objects, input buffer is mapped.
     buffer1 = device.create_buffer_with_data(data=data1, usage=wgpu.BufferUsage.STORAGE)
     buffer2 = device.create_buffer_with_data(data=data2, usage=wgpu.BufferUsage.STORAGE)
     buffer3 = device.create_buffer(
-        size=data1.nbytes, usage=wgpu.BufferUsage.STORAGE | wgpu.BufferUsage.COPY_SRC
+        size=data1.nbytes,
+        usage=wgpu.BufferUsage.STORAGE | wgpu.BufferUsage.COPY_SRC,
     )
 
     # Setup layout and bindings
@@ -104,13 +102,14 @@ def hello_compute():
     # Create and run the pipeline
     compute_pipeline = device.create_compute_pipeline(
         layout=pipeline_layout,
-        compute={"module": cshader, "entry_point": "main"},
+        compute={
+            "module": device.create_shader_module(code=shader_source),
+            "entry_point": "main",
+        },
     )
 
-    """
-    Create a QuerySet to store the 'beginning_of_pass' and 'end_of_pass' timestamps.
-    Set the 'count' parameter to 2, as this set will contain 2 timestamps.
-    """
+    # Create a QuerySet to store the 'beginning_of_pass' and 'end_of_pass' timestamps.
+    # Set the 'count' parameter to 2, as this set will contain 2 timestamps.
     query_set = device.create_query_set(type=wgpu.QueryType.timestamp, count=2)
     command_encoder = device.create_command_encoder()
 
@@ -123,11 +122,9 @@ def hello_compute():
         }
     )
 
-    """
-    Create the buffer to store our query results.
-    Each timestamp is 8 bytes. We mark the buffer usage to be QUERY_RESOLVE,
-    as we will use this buffer in a resolve_query_set call later.
-    """
+    # Create the buffer to store our query results.
+    # Each timestamp is 8 bytes. We mark the buffer usage to be QUERY_RESOLVE,
+    # as we will use this buffer in a resolve_query_set call later.
     query_buf = device.create_buffer(
         size=8 * query_set.count,
         usage=wgpu.BufferUsage.QUERY_RESOLVE
@@ -152,11 +149,9 @@ def hello_compute():
     )
     device.queue.submit([command_encoder.finish()])
 
-    """
-    Read the query buffer to get the timestamps.
-    Index 0: beginning timestamp
-    Index 1: end timestamp
-    """
+    # Read the query buffer to get the timestamps.
+    # Index 0: beginning timestamp
+    # Index 1: end timestamp
     timestamps = device.queue.read_buffer(query_buf).cast("Q").tolist()
     print(f"Adding two {n} sized arrays took {(timestamps[1]-timestamps[0])/1000} us")
 
