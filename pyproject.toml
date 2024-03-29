@@ -22,7 +22,7 @@ license = {file = "LICENSE"}
 name = "python-wgpu-torch-playground"
 readme = "README.md"
 requires-python = ">=3.10"
-version = "0.0.0"
+version = "0.0.1"
 
 [project.urls]
 Homepage = "https://github.com/AsherJingkongChen/python-wgpu-torch-playground/blob/main/README.md"

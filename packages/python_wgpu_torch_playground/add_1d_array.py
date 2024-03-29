@@ -22,7 +22,7 @@ def main():
 
     # Request a device.
     device = adapter.request_device()
-    print('')
+    print("")
     print(device.adapter.request_adapter_info())
     print(device.limits)
 
@@ -134,5 +134,5 @@ def main():
 
     # Ensure results are the same
     assert result.equal(result_cpu)
-    
+
     print(f"{__name__}: Ok")

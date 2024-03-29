@@ -68,5 +68,5 @@ def main():
     result = device.queue.read_buffer(buffer).cast("i").tolist()
     expected = [4, 0, 4]
     assert result == expected, (result, expected)
-    
+
     print(f"{__name__}: Ok")
