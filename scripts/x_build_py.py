@@ -30,14 +30,17 @@ def build(env_dir: PathLike[str] | str | None = None) -> None:
 
     # Build artifacts
     remove_globs("dist/", "*.egg-info")
-    check_call(f"{python} -m build --no-isolation --outdir=dist --wheel".split())
+    check_call(
+        f"{python} -m build --no-isolation --outdir=dist --wheel".split()
+    )
     remove_globs("build/")
 
     # Check and install artifacts
     build_paths = list(Path("dist").glob("*"))
     check_call(f"{python} -m twine check --strict".split() + build_paths)
     check_call(
-        f"{python} -m pip install --force-reinstall --no-deps".split() + build_paths
+        f"{python} -m pip install --force-reinstall --no-deps".split()
+        + build_paths
     )
 
 

@@ -11,8 +11,8 @@ def main():
 
     # Define the number of elements, global and local sizes.
     # Change these and see how it affects performance.
-    n = 256 * 64
-    local_size = [64, 1, 1]
+    n = 2 * 1
+    local_size = [1, 1, 1]
     global_size = [n // local_size[0], 1, 1]
 
     # Define two arrays
@@ -34,8 +34,12 @@ def main():
     )
 
     # Create buffer objects, input buffer is mapped.
-    buffer1 = device.create_buffer_with_data(data=data1, usage=wgpu.BufferUsage.STORAGE)
-    buffer2 = device.create_buffer_with_data(data=data2, usage=wgpu.BufferUsage.STORAGE)
+    buffer1 = device.create_buffer_with_data(
+        data=data1, usage=wgpu.BufferUsage.STORAGE
+    )
+    buffer2 = device.create_buffer_with_data(
+        data=data2, usage=wgpu.BufferUsage.STORAGE
+    )
     buffer3 = device.create_buffer(
         size=data1.nbytes,
         usage=wgpu.BufferUsage.STORAGE | wgpu.BufferUsage.COPY_SRC,
@@ -100,7 +104,9 @@ def main():
 
     # Create and run the pipeline
     compute_pipeline = device.create_compute_pipeline(
-        layout=device.create_pipeline_layout(bind_group_layouts=[bind_group_layout]),
+        layout=device.create_pipeline_layout(
+            bind_group_layouts=[bind_group_layout]
+        ),
         compute={
             "module": device.create_shader_module(
                 code=(
