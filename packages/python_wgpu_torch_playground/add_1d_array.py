@@ -101,10 +101,14 @@ def main():
 
     # Create and run the pipeline
     compute_pipeline = device.create_compute_pipeline(
-        layout=device.create_pipeline_layout(bind_group_layouts=[bind_group_layout]),
+        layout=device.create_pipeline_layout(
+            bind_group_layouts=[bind_group_layout]
+        ),
         compute={
             "module": device.create_shader_module(
-                code=(Path(__file__).with_name("add_1d_array.wgsl").open().read())
+                code=(
+                    Path(__file__).with_name("add_1d_array.wgsl").open().read()
+                )
             ),
             "entry_point": "main",
         },

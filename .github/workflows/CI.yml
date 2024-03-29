@@ -35,7 +35,7 @@ jobs:
           cache: "pip"
       
       - name: "Install GPU Drivers for Vulkan"
-        if: runner.os == 'ubuntu-22.04'
+        if: matrix.runner == 'ubuntu-22.04'
         run: apt install mesa-vulkan-drivers
 
       - name: "Run Custom CI Scripts"
