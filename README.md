@@ -28,15 +28,24 @@ The built artifacts will be placed in the `./dist` directory.
 
 ### Status of platform supports
 
+- 🔴: `False`
+- 🟡: `Uncertain`
+- 🟢: `True`
+
 | Operating System | Architecture | Is supported |
 | ---------------- | ------------ | ------------ |
-| Windows          | ARM          | 🚫           |
-| Linux            | ARM          | 🚫           |
-| macOS            | ARM          | ✅           |
-| Linux            | X64          | 🚫           |
-| macOS            | X64          | 🚫           |
-| Windows          | X64          | 🚫           |
-| Windows          | X86          | 🚫           |
+| Linux            | ARM64        | 🟡           |
+| Linux            | ARM          | 🟡           |
+| Linux            | X64          | 🟢           |
+| Linux            | X86          | 🟡           |
+| macOS            | ARM64        | 🟢           |
+| macOS            | ARM          | 🔴           |
+| macOS            | X64          | 🟢           |
+| macOS            | X86          | 🟡           |
+| Windows          | ARM64        | 🟡           |
+| Windows          | ARM          | 🟡           |
+| Windows          | X64          | 🟢           |
+| Windows          | X86          | 🟡           |
 
 ## License
 
