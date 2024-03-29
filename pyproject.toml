@@ -36,4 +36,4 @@ requires = ["setuptools>=69.2.0"]
 python_wgpu_torch_playground = "python/python_wgpu_torch_playground"
 
 [tool.setuptools.package-data]
-python_wgpu_torch_playground = ["*.wgsl"]
+python_wgpu_torch_playground = ["**/*.wgsl"]
