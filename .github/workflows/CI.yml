@@ -36,7 +36,7 @@ jobs:
       
       - name: "Install GPU Drivers for Vulkan"
         if: matrix.runner == 'ubuntu-22.04'
-        run: apt install mesa-vulkan-drivers
+        run: sudo apt install mesa-vulkan-drivers
 
       - name: "Run Custom CI Scripts"
         run: python scripts/x_ci.py
