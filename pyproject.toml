@@ -33,7 +33,7 @@ build-backend = "setuptools.build_meta"
 requires = ["setuptools>=69.2.0"]
 
 [tool.setuptools.package-dir]
-python_wgpu_torch_playground = "python/python_wgpu_torch_playground"
+python_wgpu_torch_playground = "packages/python_wgpu_torch_playground"
 
 [tool.setuptools.package-data]
 python_wgpu_torch_playground = ["**/*.wgsl"]
