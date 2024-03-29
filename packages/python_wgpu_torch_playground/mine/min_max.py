@@ -1,5 +1,5 @@
 """
-A simple example to profile a compute pass using ComputePassTimestampWrites.
+A simple example to compute the minimum and maximum values of two vectors.
 """
 
 __all__ = ["main"]

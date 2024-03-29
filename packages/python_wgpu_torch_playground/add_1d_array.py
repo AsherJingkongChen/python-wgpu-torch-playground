@@ -1,5 +1,6 @@
 """
-A simple example to profile a compute pass using ComputePassTimestampWrites.
+A simple example to compute the sum of two numpy arrays
+and convert the result to a torch tensor.
 """
 
 __all__ = ["main"]
@@ -17,10 +18,10 @@ def main():
     n = 1 << 14
     global_size = [n, 1, 1]
 
-    # Request a device with the timestamp_query feature, so we can profile our computation
-    device = wgpu.gpu.request_adapter(power_preference="low-power").request_device(
-        required_features=[wgpu.FeatureName.timestamp_query]
-    )
+    adapter = wgpu.gpu.request_adapter(power_preference="high-performance")
+
+    # Request a device.
+    device = adapter.request_device()
     print(device.adapter.request_adapter_info())
     print(device.limits)
 
@@ -103,64 +104,21 @@ def main():
         layout=device.create_pipeline_layout(bind_group_layouts=[bind_group_layout]),
         compute={
             "module": device.create_shader_module(
-                code=(
-                    Path(__file__)
-                    .with_name("add_1d_array.wgsl")
-                    .open()
-                    .read()
-                )
+                code=(Path(__file__).with_name("add_1d_array.wgsl").open().read())
             ),
             "entry_point": "main",
         },
     )
 
-    # Create a QuerySet to store the 'beginning_of_pass' and 'end_of_pass' timestamps.
-    # Set the 'count' parameter to 2, as this set will contain 2 timestamps.
-    query_set = device.create_query_set(type=wgpu.QueryType.timestamp, count=2)
     command_encoder = device.create_command_encoder()
+    pass_encoder = command_encoder.begin_compute_pass()
 
-    # Pass our QuerySet and the indices into it, where the timestamps will be written.
-    pass_encoder = command_encoder.begin_compute_pass(
-        timestamp_writes={
-            "query_set": query_set,
-            "beginning_of_pass_write_index": 0,
-            "end_of_pass_write_index": 1,
-        }
-    )
-
-    # Create the buffer to store our query results.
-    # Each timestamp is 8 bytes. We mark the buffer usage to be QUERY_RESOLVE,
-    # as we will use this buffer in a resolve_query_set call later.
-    query_buf = device.create_buffer(
-        size=8 * query_set.count,
-        usage=wgpu.BufferUsage.QUERY_RESOLVE
-        | wgpu.BufferUsage.STORAGE
-        | wgpu.BufferUsage.COPY_SRC
-        | wgpu.BufferUsage.COPY_DST,
-    )
     pass_encoder.set_pipeline(compute_pipeline)
     pass_encoder.set_bind_group(0, bind_group, [], None, None)
     pass_encoder.dispatch_workgroups(*global_size)  # x y z
     pass_encoder.end()
 
-    # Resolve our queries, and store the results in the destination buffer we created above.
-    command_encoder.resolve_query_set(
-        query_set=query_set,
-        first_query=0,
-        query_count=2,
-        destination=query_buf,
-        destination_offset=0,
-    )
-
     device.queue.submit([command_encoder.finish()])
-
-    # Read the query buffer to get the timestamps.
-    # Index 0: beginning timestamp
-    # Index 1: end timestamp
-    timestamps = device.queue.read_buffer(query_buf).cast("Q").tolist()
-    print(
-        f"Multiplying two {n} sized arrays took {(timestamps[1]-timestamps[0]) / 1000} us"
-    )
 
     # Read result
     outview = device.queue.read_buffer(buffer3)
