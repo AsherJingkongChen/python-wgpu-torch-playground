@@ -17,15 +17,13 @@ jobs:
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        include:
-          - python: "3.10"
-            runner: macos-13 # macOS-X64
-          - python: "3.10"
-            runner: "macos-14" # macOS-ARM64
-          - python: "3.10"
-            runner: "ubuntu-22.04" # Linux-X64
-          - python: "3.10"
-            runner: "windows-2022" # Windows-X64
+        python:
+          - "3.10"
+        runner:
+          # - "macos-13" # macOS-X64
+          # - "macos-14" # macOS-ARM64
+          - "ubuntu-22.04" # Linux-X64
+          # - "windows-2022" # Windows-X64
     steps:
       - name: "Platform: ${{ runner.os }}-${{ runner.arch }}"
         run: echo "I'm running on ${{ runner.os }}-${{ runner.arch }}!"
@@ -35,6 +33,10 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: "pip"
+      
+      - name: "Install GPU Drivers for Vulkan"
+        if: runner.os == 'ubuntu-22.04'
+        run: apt install mesa-vulkan-drivers
 
       - name: "Run Custom CI Scripts"
         run: python scripts/x_ci.py
