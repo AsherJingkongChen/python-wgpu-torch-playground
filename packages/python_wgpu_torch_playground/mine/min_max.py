@@ -44,9 +44,7 @@ def main():
     )
 
     pipeline = device.create_compute_pipeline(
-        layout=device.create_pipeline_layout(
-            bind_group_layouts=[bind_group_layout]
-        ),
+        layout=device.create_pipeline_layout(bind_group_layouts=[bind_group_layout]),
         compute={
             "module": device.create_shader_module(
                 code=(Path(__file__).with_name("min_max.wgsl").open().read())

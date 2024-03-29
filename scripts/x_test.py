@@ -29,8 +29,8 @@ def test(env_dir: PathLike[str] | str | None = None) -> None:
 
     test_paths = list(Path().glob("**/__tests__/**/*.py"))
     check_call(
-        f"{python} -m pytest --capture=no --ignore=*-packages --import-mode=append".split()
-        + test_paths
+        f"{python} -m pytest --capture=no --exitfirst "
+        "--ignore=*-packages --import-mode=append ".split() + test_paths
     )
 
 
