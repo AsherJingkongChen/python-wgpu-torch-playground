@@ -2,21 +2,17 @@
 A simple example to profile a compute pass using ComputePassTimestampWrites.
 """
 
-__all__ = ["hello_compute"]
+__all__ = ["main"]
 
 
-def hello_compute():
-    """
-    A simple example to profile a compute pass using ComputePassTimestampWrites.
-    """
-
+def main():
     import wgpu
     from pathlib import Path
 
     # Define the number of elements, global and local sizes.
     # Change these and see how it affects performance.
-    n = 65535 * 2
-    local_size = [2, 1, 1]
+    n = 256 * 64
+    local_size = [64, 1, 1]
     global_size = [n // local_size[0], 1, 1]
 
     # Define two arrays
@@ -38,12 +34,8 @@ def hello_compute():
     )
 
     # Create buffer objects, input buffer is mapped.
-    buffer1 = device.create_buffer_with_data(
-        data=data1, usage=wgpu.BufferUsage.STORAGE
-    )
-    buffer2 = device.create_buffer_with_data(
-        data=data2, usage=wgpu.BufferUsage.STORAGE
-    )
+    buffer1 = device.create_buffer_with_data(data=data1, usage=wgpu.BufferUsage.STORAGE)
+    buffer2 = device.create_buffer_with_data(data=data2, usage=wgpu.BufferUsage.STORAGE)
     buffer3 = device.create_buffer(
         size=data1.nbytes,
         usage=wgpu.BufferUsage.STORAGE | wgpu.BufferUsage.COPY_SRC,
@@ -108,14 +100,12 @@ def hello_compute():
 
     # Create and run the pipeline
     compute_pipeline = device.create_compute_pipeline(
-        layout=device.create_pipeline_layout(
-            bind_group_layouts=[bind_group_layout]
-        ),
+        layout=device.create_pipeline_layout(bind_group_layouts=[bind_group_layout]),
         compute={
             "module": device.create_shader_module(
                 code=(
                     Path(__file__)
-                    .with_name("shader.wgsl")
+                    .with_name("hello_compute.wgsl")
                     .open()
                     .read()
                     .format(",".join(map(str, local_size)))
@@ -170,7 +160,7 @@ def hello_compute():
     # Index 1: end timestamp
     timestamps = device.queue.read_buffer(query_buf).cast("Q").tolist()
     print(
-        f"Adding two {n} sized arrays took {(timestamps[1]-timestamps[0]) / 1000} us"
+        f"Multiplying two {n} sized arrays took {(timestamps[1]-timestamps[0]) / 1000} us"
     )
 
     # Read result
@@ -178,7 +168,7 @@ def hello_compute():
     result = out.tolist()
 
     # Calculate the result on the CPU for comparison
-    result_cpu = [a + b for a, b in zip(data1, data2)]
+    result_cpu = [a * b for a, b in zip(data1, data2)]
 
     data1.release()
     data2.release()

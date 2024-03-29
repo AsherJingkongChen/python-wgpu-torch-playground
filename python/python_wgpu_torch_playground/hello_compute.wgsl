@@ -11,5 +11,5 @@ var<storage,read_write> data3: array<i32>;
 @workgroup_size({})
 fn main(@builtin(global_invocation_id) index: vec3<u32>) {{
     let i: u32 = index.x;
-    data3[i] = data1[i] + data2[i];
+    data3[i] = data1[i] * data2[i];
 }}
