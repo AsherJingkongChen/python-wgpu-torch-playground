@@ -1,7 +1,7 @@
 def test_hello_compute():
-    from python_wgpu_torch_playground import hello_compute
+    from python_wgpu_torch_playground import add_1d_array
 
-    hello_compute.main()
+    add_1d_array.main()
 
 
 def test_min_max():

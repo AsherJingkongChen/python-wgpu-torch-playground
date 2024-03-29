@@ -6,39 +6,35 @@ __all__ = ["main"]
 
 
 def main():
-    import wgpu
     from pathlib import Path
+    from pprint import pprint as print
+    import numpy
+    import torch
+    import wgpu
 
     # Define the number of elements, global and local sizes.
     # Change these and see how it affects performance.
-    n = 2 * 1
-    local_size = [1, 1, 1]
-    global_size = [n // local_size[0], 1, 1]
-
-    # Define two arrays
-    data1 = memoryview(bytearray(n * 4)).cast("i")
-    data2 = memoryview(bytearray(n * 4)).cast("i")
-
-    # Initialize the arrays
-    for i in range(n):
-        data1[i] = i
-
-    for i in range(n):
-        data2[i] = i * 2
-
-    adapter = wgpu.gpu.request_adapter(power_preference="low-power")
+    n = 1 << 14
+    global_size = [n, 1, 1]
 
     # Request a device with the timestamp_query feature, so we can profile our computation
-    device = adapter.request_device(
+    device = wgpu.gpu.request_adapter(power_preference="low-power").request_device(
         required_features=[wgpu.FeatureName.timestamp_query]
     )
+    print(device.adapter.request_adapter_info())
+    print(device.limits)
+
+    data1 = numpy.arange(0, n, 1, dtype=numpy.int32)
+    data2 = (data1 * 2).astype(numpy.int32)
 
     # Create buffer objects, input buffer is mapped.
     buffer1 = device.create_buffer_with_data(
-        data=data1, usage=wgpu.BufferUsage.STORAGE
+        data=data1,
+        usage=wgpu.BufferUsage.STORAGE,
     )
     buffer2 = device.create_buffer_with_data(
-        data=data2, usage=wgpu.BufferUsage.STORAGE
+        data=data2,
+        usage=wgpu.BufferUsage.STORAGE,
     )
     buffer3 = device.create_buffer(
         size=data1.nbytes,
@@ -104,17 +100,14 @@ def main():
 
     # Create and run the pipeline
     compute_pipeline = device.create_compute_pipeline(
-        layout=device.create_pipeline_layout(
-            bind_group_layouts=[bind_group_layout]
-        ),
+        layout=device.create_pipeline_layout(bind_group_layouts=[bind_group_layout]),
         compute={
             "module": device.create_shader_module(
                 code=(
                     Path(__file__)
-                    .with_name("hello_compute.wgsl")
+                    .with_name("add_1d_array.wgsl")
                     .open()
                     .read()
-                    .format(",".join(map(str, local_size)))
                 )
             ),
             "entry_point": "main",
@@ -170,14 +163,11 @@ def main():
     )
 
     # Read result
-    out = device.queue.read_buffer(buffer3).cast("i")
-    result = out.tolist()
+    outview = device.queue.read_buffer(buffer3)
+    result = torch.frombuffer(outview, dtype=torch.int32)
 
     # Calculate the result on the CPU for comparison
-    result_cpu = [a * b for a, b in zip(data1, data2)]
-
-    data1.release()
-    data2.release()
+    result_cpu = torch.from_numpy(data1 + data2)
 
     # Ensure results are the same
-    assert result == result_cpu
+    assert result.equal(result_cpu)

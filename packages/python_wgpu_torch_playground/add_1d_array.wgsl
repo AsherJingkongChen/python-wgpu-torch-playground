@@ -8,8 +8,8 @@ var<storage,read> data2: array<i32>;
 var<storage,read_write> data3: array<i32>;
 
 @compute
-@workgroup_size({})
+@workgroup_size(1)
 fn main(@builtin(global_invocation_id) index: vec3<u32>) {{
     let i: u32 = index.x;
-    data3[i] = data1[i] * data2[i];
+    data3[i] = data1[i] + data2[i];
 }}
